@@ -1,0 +1,288 @@
+/* ============================================================
+   xTrade Design System — Colors & Type
+   A Howden product. London Market broker trading application.
+   ============================================================ */
+
+/* -------- Fonts -------- */
+@font-face {
+  font-family: 'AktivGrotesk';
+  src: url('fonts/AktivGroteskVF.woff2') format('woff2-variations'),
+       url('fonts/AktivGroteskVF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GTUltraMedian';
+  src: url('fonts/GTUltraMedian-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexMono';
+  src: url('fonts/IBMPlexMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBMPlexMono';
+  src: url('fonts/IBMPlexMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBMPlexMono';
+  src: url('fonts/IBMPlexMono-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Material Symbols — used extensively across the product UI */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block');
+
+:root {
+  /* =========================================================
+     COLOR TOKENS — Base palette (from Client/src/constants/styles/colors.ts)
+     ========================================================= */
+
+  /* Brand — Howden greens & pistachio accent */
+  --moss-green: #173F35;         /* Primary dark — core brand */
+  --moss-green-50: #173F3550;
+  --moss-green-85: #173F35D9;
+  --pistachio: #E0EC89;          /* Primary accent — logos, action */
+  --pistachio-soft: #E0EC8980;
+  --pistachio-10: rgba(224, 236, 137, 0.10);
+  --pistachio-40: #E0EC8940;
+  --pistachio-light: #F9FBE7;
+
+  /* Action — cobalt & mustard */
+  --cobalt: #0857C3;             /* Links, active borders */
+  --cobalt-80: #3979CF;
+  --cobalt-30: #0857C370;
+  --cobalt-25: rgba(8, 87, 195, 0.25);
+  --cobalt-05: #E7F0FE;          /* Tint background */
+  --cobalt-light: #CEE2FD;
+  --cobalt-tint: #DAE6F6;
+  --alice-blue: #F3F8FE;
+  --light-blue: #F3F7FC;
+  --pale-sky-blue: #E6EEF9;
+  --sky-blue: #B5CDED;
+
+  --mustard: #FFBF3F;            /* Primary CTA */
+  --mustard-sol: #FFD480;        /* Hover */
+  --mustard-tint: #FFF5E2;
+  --mustard-10: #FFBF3F1A;
+  --neutral-amber: #FAAA00;
+  --neutral-amber-light: rgba(255, 191, 63, 0.15);
+
+  /* Semantic — status */
+  --status-positive: #0DA20D;    /* Positive / bound */
+  --status-negative: #DC000F;    /* Error / declined */
+  --status-negative-10: #FFE5E7;
+  --status-poppy: #F9423A;       /* Alt critical */
+  --status-poppy-tint: #FEECEB;
+  --status-deep-red: #3C0F11;
+  --status-pomegranate: #C0392B;
+  --soft-pink: #FBE5E7;
+  --teal: #7CE0D3;
+
+  /* Neutrals (ordered light → dark) */
+  --white: #FFFFFF;
+  --snow-gray: #FAFAFA;
+  --soft-gray: #F2F2F2;
+  --soft-white: #F0F0F0;
+  --soft-white-secondary: #F6F6F6;
+  --whisper-gray: #EDEDED;
+  --cloud-gray: #E5E5E5;
+  --pale-gray: #D9D9D9;
+  --silver-gray: #CCCCCC;
+  --gray-b25: #BFBFBF;
+  --secondary-gray: #9D9D9D;
+  --mithril: #878787;
+  --gray-05: #8D9199;
+  --medium-gray: #7A7A7A;
+  --slate-gray: #737373;
+  --charcoal-gray: #6B7280;
+  --dark-gray: #666666;
+  --gray-b75: #404040;
+  --gunmetal: #333333;
+  --nero: #1A1A1A;               /* Primary text */
+  --black: #000000;
+  --expired-gray: #808080;
+
+  /* Overlay / alpha */
+  --black-5: rgba(0, 0, 0, 0.05);
+  --black-10: rgba(0, 0, 0, 0.10);
+  --black-20: rgba(0, 0, 0, 0.20);
+  --black-40: rgba(0, 0, 0, 0.40);
+  --black-50: rgba(0, 0, 0, 0.50);
+  --white-70: rgba(255, 255, 255, 0.70);
+  --white-50: rgba(255, 255, 255, 0.50);
+  --white-20: rgba(255, 255, 255, 0.20);
+
+  /* =========================================================
+     SEMANTIC COLORS
+     ========================================================= */
+  --bg-app: var(--white);
+  --bg-canvas: var(--soft-white-secondary);      /* App background under headers */
+  --bg-panel: var(--white);                      /* Card panels */
+  --bg-panel-alt: #EFF1F4;                       /* Secondary panel (risk editor sidebar) */
+  --bg-overlay: var(--black-40);                 /* Dashboard widget overlay */
+  --bg-chip: var(--soft-white-secondary);
+  --bg-chip-brand: var(--moss-green);            /* Pistachio text on moss chips */
+  --bg-row-hover: var(--pale-sky-blue);
+  --bg-row-selected: var(--cobalt-05);
+
+  --fg-1: var(--nero);                           /* Primary text */
+  --fg-2: var(--dark-gray);                      /* Secondary text */
+  --fg-3: var(--slate-gray);                     /* Tertiary */
+  --fg-muted: var(--secondary-gray);
+  --fg-disabled: var(--dark-gray);
+  --fg-inverse: var(--white);
+  --fg-link: var(--cobalt);
+  --fg-brand: var(--moss-green);
+
+  --border-default: var(--pale-gray);            /* Input default border */
+  --border-soft: var(--cloud-gray);
+  --border-strong: var(--black);                 /* Focus */
+  --border-brand: var(--moss-green);
+  --border-hover: var(--cobalt);
+  --border-invalid: var(--status-negative);
+
+  --accent-primary: var(--mustard);              /* Primary button */
+  --accent-primary-hover: var(--mustard-sol);
+  --accent-secondary: var(--moss-green);         /* Secondary (pistachio theme) */
+  --accent-on-secondary: var(--pistachio);
+
+  /* =========================================================
+     TYPE TOKENS
+     ========================================================= */
+  --font-serif: 'GTUltraMedian', Georgia, 'Times New Roman', serif;
+  --font-sans: 'AktivGrotesk', Arial, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBMPlexMono', 'Courier New', monospace;
+
+  /* Display — GT Ultra Median (serif) */
+  --type-display-xl: 500 80px/88px var(--font-serif);
+  --type-display-lg: 500 42px/48px var(--font-serif);
+  --type-display-md: 500 32px/40px var(--font-serif);
+  --type-display-sm: 500 24px/32px var(--font-serif);   /* Login box title */
+
+  /* Body / UI — Aktiv Grotesk */
+  --type-body-lg: 400 18px/26px var(--font-sans);
+  --type-body-md: 400 14px/20px var(--font-sans);       /* Default UI size */
+  --type-body-sm: 400 12px/16px var(--font-sans);
+  --type-body-xs: 400 10px/14px var(--font-sans);
+
+  --type-label-md: 500 14px/16px var(--font-sans);      /* Input labels, field values */
+  --type-label-sm: 500 12px/16px var(--font-sans);
+  --type-button: 600 14px/16px var(--font-sans);        /* Buttons (letter-spacing 0.5) */
+  --type-emphasis: 600 14px/20px var(--font-sans);
+
+  /* Mono — IBM Plex Mono for numeric / reference / code */
+  --type-mono-md: 500 13px/18px var(--font-mono);
+  --type-mono-sm: 500 12px/16px var(--font-mono);
+  --type-mono-xs: 600 9px/12px var(--font-mono);        /* Dense data labels */
+
+  /* =========================================================
+     SPACING / SHAPE / SHADOW
+     ========================================================= */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;                /* Buttons, inputs */
+  --radius-lg: 12px;               /* Dashboard widgets, panels */
+  --radius-xl: 16px;
+  --radius-2xl: 23px;
+  --radius-pill: 999px;
+
+  /* The signature panel shadow — a soft stacked "float" from panelStyles */
+  --shadow-panel:
+    0 0 0 0 rgba(0,0,0,0.05),
+    2px 2px 5px 0 rgba(0,0,0,0.05),
+    7px 7px 10px 0 rgba(0,0,0,0.04),
+    15px 15px 13px 0 rgba(0,0,0,0.03),
+    27px 27px 15px 0 rgba(0,0,0,0.01),
+    42px 42px 17px 0 rgba(0,0,0,0.00);
+
+  /* Input / card shadows */
+  --shadow-input: 2px 2px 4px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 2px 6px 0 rgba(0, 0, 0, 0.04);
+  --shadow-modal: 0 16px 32px -8px rgba(0, 0, 0, 0.18), 0 8px 16px -8px rgba(0, 0, 0, 0.12);
+
+  /* Header gradient overlay protection (over wallpapers) */
+  --gradient-header-protect: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0));
+  --gradient-left-protect: linear-gradient(to right, rgba(0,0,0,0.5), rgba(0,0,0,0) 83%);
+
+  /* Layout dimensions */
+  --h-header: 56px;
+  --h-input: 40px;
+  --h-button: 40px;
+  --w-sidebar: 380px;
+  --w-sidebar-collapsed: 48px;
+  --w-rhs-min: 436px;
+
+  /* Animation */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-med: 240ms;
+  --dur-slow: 500ms;                /* Button color transitions use 500ms */
+}
+
+/* =========================================================
+   BASE ELEMENT STYLES
+   ========================================================= */
+html, body {
+  font: var(--type-body-md);
+  color: var(--fg-1);
+  background: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+}
+
+h1 { font: var(--type-display-lg); color: var(--fg-1); margin: 0; }
+h2 { font: var(--type-display-md); color: var(--fg-1); margin: 0; }
+h3 { font: var(--type-display-sm); color: var(--fg-1); margin: 0; }
+h4 { font: var(--type-label-md); color: var(--fg-1); margin: 0; font-weight: 600; }
+p  { font: var(--type-body-md); color: var(--fg-1); margin: 0; }
+small { font: var(--type-body-sm); color: var(--fg-2); }
+code, pre, kbd, samp { font: var(--type-mono-md); }
+
+a { color: var(--fg-link); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { opacity: 0.85; }
+
+button { font-family: var(--font-sans); }
+
+/* Material Symbols default rendering */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
