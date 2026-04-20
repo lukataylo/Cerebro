@@ -95,7 +95,7 @@ function FlowCanvas({ quotes, particles }) {
 
   return (
     <div className="flow-canvas">
-      <svg viewBox="0 0 600 460" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 600 460" preserveAspectRatio="none">
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
             <path d="M0,0 L10,5 L0,10 Z" fill="var(--moss-green-50)" />
