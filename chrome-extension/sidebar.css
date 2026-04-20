@@ -362,6 +362,11 @@ html, body {
   background: var(--bg-canvas);
   display: flex;
   flex-direction: column;
+  /* Cover the underlying list entirely — a stray stacking context or
+     contiguous scroll was letting the "Recent classifications" section
+     bleed through at the seam. */
+  z-index: 20;
+  isolation: isolate;
   animation: detailIn 200ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 @keyframes detailIn {
@@ -371,9 +376,13 @@ html, body {
 
 .detail-hd {
   flex: none;
-  padding: 8px 8px 8px 4px;
-  gap: 6px;
+  padding: 10px 10px 10px 8px;
+  gap: 8px;
+  min-height: 52px;
+  align-items: center;
 }
+.detail-hd .icon-btn { flex: none; }
+.detail-hd-meta { overflow: hidden; }
 .detail-hd-meta {
   flex: 1;
   min-width: 0;
