@@ -1,0 +1,23 @@
+node_modules/
+
+# macOS
+.DS_Store
+
+# Microsoft Office lockfiles
+~$*
+
+# Uploaded / ingested files (runtime artefacts)
+uploads/
+
+# SQLite runtime state (reseeds from scratch on startup)
+server/data.db
+server/data.db-shm
+server/data.db-wal
+
+# Secrets — never commit
+server/.env
+.env
+
+# Python build artefacts
+__pycache__/
+*.pyc

@@ -4,8 +4,7 @@ const { useState, useEffect, useRef, useMemo, useCallback } = React;
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "adminLayout": "diagram",
   "brokerLayout": "split",
-  "liveFeed": true,
-  "density": "comfortable"
+  "liveFeed": true
 }/*EDITMODE-END*/;
 
 const STORAGE_KEY = 'cerebro.state.v1';
@@ -23,7 +22,11 @@ function saveState(s) {
 function App() {
   const stored = useMemo(loadState, []);
   const [role, setRole] = useState(stored.role || 'admin');
-  const [adminTab, setAdminTab] = useState(stored.adminTab || 'triage'); // 'triage' | 'flow' | 'rules' | 'audit'
+  // 'flow' was removed — migrate any persisted state back to overview.
+  const [adminTab, setAdminTab] = useState(
+    stored.adminTab && stored.adminTab !== 'flow' ? stored.adminTab : 'overview'
+  ); // 'overview' | 'triage' | 'rules' | 'audit'
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [quotes, setQuotes] = useState(window.SEED_QUOTES);
   const [selected, setSelected] = useState(null);
   const [newQuoteIds, setNewQuoteIds] = useState(new Set());
@@ -37,6 +40,7 @@ function App() {
   const [ingestOpen, setIngestOpen] = useState(false);
   const [apiReady, setApiReady] = useState(false);
   const [apiHealth, setApiHealth] = useState(null);
+  const [rules, setRules] = useState(() => window.RULES || []);
 
   // Persist
   useEffect(() => {
@@ -66,7 +70,7 @@ function App() {
   // Spawn a routing-flow particle for quote `q`: bucket → CEREBRO → destination.
   const spawnParticle = useCallback((q) => {
     const bucketY = q.bucket.bucket === 'large' ? 12 : q.bucket.bucket === 'medium' ? 30 : 60;
-    const destYmap = { ppl: 12, xtrade_om: 28, xtrade_sf: 44, hat: 60, gxb: 76, acturis: 92, review: 50 };
+    const destYmap = { trade: 20, whitespace: 40, ppl: 56, gxb: 72, acturis: 88, review: 50 };
     const pid = 'p-' + q.id + '-' + Math.random().toString(36).slice(2, 6);
     const color = (window.DESTINATIONS[q.destId] || {}).color || 'var(--mustard)';
     setParticles(ps => [...ps, { id: pid, x: 16, y: bucketY, opacity: 1, color }]);
@@ -85,8 +89,15 @@ function App() {
       setApiHealth(window.CEREBRO_API_HEALTH || null);
       if (ready) {
         try {
-          const qs = await window.cerebroAPI.quotes();
+          const [qs, rulesResp] = await Promise.all([
+            window.cerebroAPI.quotes(),
+            window.cerebroAPI.rules().catch(() => null),
+          ]);
           setQuotes(qs);
+          if (rulesResp?.rules?.length) {
+            setRules(rulesResp.rules);
+            window.RULES = rulesResp.rules;
+          }
           setActivityLog([{ id: Date.now(), time: new Date().toTimeString().slice(0, 5),
             text: `Backend connected · ${qs.length} quotes loaded · mode <b>${window.CEREBRO_API_HEALTH?.mode || '?'}</b>` }]);
         } catch (err) {
@@ -96,12 +107,21 @@ function App() {
     })();
   }, []);
 
-  // Poll for new quotes when API is live. Replaces the simulator.
+  // Poll for new quotes when API is live. Replaces the simulator. Also
+  // refreshes the rules list so edits made in the Rules tab propagate
+  // to other tabs (the Triage tab's RulesPanel reads this).
   useEffect(() => {
     if (!apiReady) return;
     const iv = setInterval(async () => {
       try {
-        const qs = await window.cerebroAPI.quotes();
+        const [qs, rulesResp] = await Promise.all([
+          window.cerebroAPI.quotes(),
+          window.cerebroAPI.rules().catch(() => null),
+        ]);
+        if (rulesResp?.rules?.length) {
+          setRules(rulesResp.rules);
+          window.RULES = rulesResp.rules;
+        }
         setQuotes(prev => {
           const prevTop = prev[0]?.id;
           const freshTop = qs[0]?.id;
@@ -158,23 +178,6 @@ function App() {
     return () => clearInterval(iv);
   }, [tweaks.liveFeed, apiReady, spawnParticle]);
 
-  const handleReroute = useCallback((qid, newDest) => {
-    setQuotes(prev => prev.map(q => q.id === qid ? { ...q, destId: newDest, state: 'forwarded', minsAgo: 0 } : q));
-    if (apiReady) {
-      window.cerebroAPI.forward(qid, newDest).catch(err => console.warn('[forward] failed:', err));
-    }
-    const q = quotes.find(x => x.id === qid);
-    if (q) {
-      const now = new Date();
-      const t = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      setActivityLog(log => [
-        { id: Date.now(), time: t, text: `<b style="color:var(--cobalt)">Manual override</b> · ${q.assured} → <b>${window.DESTINATIONS[newDest].label}</b>` },
-        ...log,
-      ].slice(0, 10));
-    }
-    setSelected(s => s && s.id === qid ? { ...s, destId: newDest, state: 'forwarded' } : s);
-  }, [quotes, apiReady]);
-
   const handleIngested = useCallback((q) => {
     setQuotes(prev => [q, ...prev.filter(p => p.id !== q.id)]);
     setNewQuoteIds(cur => { const n = new Set(cur); n.add(q.id);
@@ -201,15 +204,11 @@ function App() {
             <span className="f">from</span><span className="h">HOWDEN</span>
           </span>
         </div>
-        <div className="role-switch" role="tablist">
-          <button className={role === 'admin' ? 'active' : ''} onClick={() => setRole('admin')} role="tab">Admin</button>
-          <button className={role === 'broker' ? 'active' : ''} onClick={() => setRole('broker')} role="tab">Broker</button>
-        </div>
         <nav className="nav">
           {role === 'admin' ? (
             <>
+              <a href="#" className={adminTab === 'overview' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setAdminTab('overview'); }}>Overview</a>
               <a href="#" className={adminTab === 'triage' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setAdminTab('triage'); }}>Triage</a>
-              <a href="#" className={adminTab === 'flow' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setAdminTab('flow'); }}>Routing flow</a>
               <a href="#" className={adminTab === 'rules' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setAdminTab('rules'); }}>Rules</a>
               <a href="#" className={adminTab === 'audit' ? 'active' : ''} onClick={(e) => { e.preventDefault(); setAdminTab('audit'); }}>Audit</a>
             </>
@@ -218,7 +217,54 @@ function App() {
           )}
         </nav>
         <div className="spacer" />
-        <div className="avatar">{role === 'admin' ? 'OA' : 'SK'}</div>
+        <div className="user-menu" data-open={userMenuOpen ? 'true' : 'false'}>
+          <button
+            className="avatar avatar-btn"
+            onClick={() => setUserMenuOpen(v => !v)}
+            aria-haspopup="menu"
+            aria-expanded={userMenuOpen}
+            title={role === 'admin' ? 'Ops admin' : 'Broker'}
+          >
+            {role === 'admin' ? 'OA' : 'SK'}
+          </button>
+          {userMenuOpen && (
+            <>
+              <div className="user-menu-scrim" onClick={() => setUserMenuOpen(false)} />
+              <div className="user-menu-dropdown" role="menu">
+                <div className="user-menu-head">
+                  <div className="user-menu-name">{role === 'admin' ? 'Ops Admin' : 'Sarah Kent'}</div>
+                  <div className="user-menu-email">{role === 'admin' ? 'ops@howden.com' : 'sarah.kent@howden.com'}</div>
+                </div>
+                <div className="user-menu-section-hd">View as</div>
+                <button
+                  role="menuitemradio"
+                  aria-checked={role === 'admin'}
+                  className={`user-menu-item${role === 'admin' ? ' active' : ''}`}
+                  onClick={() => { setRole('admin'); setUserMenuOpen(false); }}
+                >
+                  <span className="material-symbols-outlined">admin_panel_settings</span>
+                  Admin
+                  {role === 'admin' && <span className="material-symbols-outlined check">check</span>}
+                </button>
+                <button
+                  role="menuitemradio"
+                  aria-checked={role === 'broker'}
+                  className={`user-menu-item${role === 'broker' ? ' active' : ''}`}
+                  onClick={() => { setRole('broker'); setUserMenuOpen(false); }}
+                >
+                  <span className="material-symbols-outlined">person</span>
+                  Broker
+                  {role === 'broker' && <span className="material-symbols-outlined check">check</span>}
+                </button>
+                <div className="user-menu-sep" />
+                <button className="user-menu-item" onClick={() => setUserMenuOpen(false)}>
+                  <span className="material-symbols-outlined">logout</span>
+                  Sign out
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </header>
 
       {/* Sub header */}
@@ -226,19 +272,19 @@ function App() {
         <div className="page-title">
           <span className="material-symbols-outlined">
             {role === 'broker' ? 'inventory_2' :
-              adminTab === 'flow' ? 'account_tree' :
+              adminTab === 'overview' ? 'space_dashboard' :
               adminTab === 'rules' ? 'rule' :
               adminTab === 'audit' ? 'history' : 'dashboard'}
           </span>
           {role === 'broker' ? 'Post-triage workbench' :
-            adminTab === 'flow' ? 'Routing flow' :
+            adminTab === 'overview' ? 'Operations overview' :
             adminTab === 'rules' ? 'Rules engine' :
             adminTab === 'audit' ? 'Audit trail' : 'Triage console'}
         </div>
         <div className="crumb">
           {role === 'admin' ? 'Operations' : 'Broker'} <span className="sep">/</span>
           <b>{role === 'broker' ? 'My risks' :
-            adminTab === 'flow' ? 'Routing flow' :
+            adminTab === 'overview' ? 'Overview' :
             adminTab === 'rules' ? 'Rules' :
             adminTab === 'audit' ? 'Audit' : 'Triage'}</b>
         </div>
@@ -248,7 +294,7 @@ function App() {
             <span className="mono-label">
               <span className="material-symbols-outlined" style={{ fontSize: 12, verticalAlign: '-2px', color: apiReady ? 'var(--status-positive)' : (tweaks.liveFeed ? 'var(--status-positive)' : 'var(--fg-muted)') }}>fiber_manual_record</span>
               {apiReady
-                ? ` LIVE · ${apiHealth?.mode === 'live' ? 'CLAUDE' : 'MOCK'} · api:${apiHealth?.model || ''}`
+                ? ` LIVE · ${apiHealth?.mode === 'live' ? 'CLAUDE' : 'MOCK'}${apiHealth?.model ? ` · ${apiHealth.model}` : ''}`
                 : (tweaks.liveFeed ? ' LIVE · sim 3.2s' : ' PAUSED')}
             </span>
             {!apiReady && (
@@ -257,17 +303,37 @@ function App() {
                 {tweaks.liveFeed ? 'PAUSE FEED' : 'RESUME'}
               </button>
             )}
-            {apiReady && (
-              <button className="btn primary sm" onClick={() => setIngestOpen(true)}>
-                <span className="material-symbols-outlined">auto_awesome</span>INGEST EMAIL
-              </button>
-            )}
           </>
         )}
         {role === 'broker' && (
-          <button className="btn primary sm" onClick={() => apiReady && setIngestOpen(true)}>
-            <span className="material-symbols-outlined">add</span>NEW RISK
-          </button>
+          <>
+            <div className="view-seg" role="tablist" aria-label="Broker layout">
+              {[
+                { id: 'split',  label: 'Split',  icon: 'view_column_2' },
+                { id: 'queue',  label: 'Queue',  icon: 'view_list' },
+                { id: 'kanban', label: 'Kanban', icon: 'view_kanban' },
+              ].map(v => (
+                <button
+                  key={v.id}
+                  role="tab"
+                  aria-selected={tweaks.brokerLayout === v.id}
+                  className={tweaks.brokerLayout === v.id ? 'active' : ''}
+                  onClick={() => setTweak('brokerLayout', v.id)}
+                >
+                  <span className="material-symbols-outlined">{v.icon}</span>
+                  {v.label}
+                </button>
+              ))}
+            </div>
+            <button
+              className="btn primary sm"
+              onClick={() => setIngestOpen(true)}
+              disabled={!apiReady}
+              title={apiReady ? 'Ingest a new risk' : 'Start the backend (npm start in /server) to ingest new risks'}
+            >
+              <span className="material-symbols-outlined">add</span>NEW RISK
+            </button>
+          </>
         )}
       </div>
 
@@ -283,9 +349,11 @@ function App() {
             activityLog={activityLog}
             layout={tweaks.adminLayout}
             tab={adminTab}
+            rules={rules}
+            apiReady={apiReady}
           />
         : <BrokerScreen
-            quotes={quotes}
+            quotes={quotes.filter(q => q.cls === 'Aviation' || q.cls === 'Cyber')}
             onSelect={setSelected}
             selectedId={selected?.id}
             layout={tweaks.brokerLayout}
@@ -296,7 +364,27 @@ function App() {
       <QuoteDrawer
         quote={selected}
         onClose={() => setSelected(null)}
-        onReroute={handleReroute}
+        onTuneRule={(ruleId) => {
+          setRole('admin');
+          setAdminTab('rules');
+          // Give React time to flip the tab before scrolling the rule into view.
+          setTimeout(() => {
+            const el = document.querySelector(`[data-rule-id="${ruleId}"]`);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 150);
+        }}
+        onQuoteUpdated={(updated) => {
+          setQuotes(prev => prev.map(q => q.id === updated.id ? { ...q, ...updated } : q));
+          setSelected(s => s && s.id === updated.id ? { ...s, ...updated } : s);
+          const dest = window.DESTINATIONS[updated.destId];
+          const now = new Date();
+          const t = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+          setActivityLog(log => [
+            { id: Date.now(), time: t,
+              text: `<b style="color:var(--cobalt)">${updated.state || 'updated'}</b> · ${updated.assured} → <b>${dest?.label || updated.destId}</b>` },
+            ...log,
+          ].slice(0, 10));
+        }}
         role={role}
       />
 
