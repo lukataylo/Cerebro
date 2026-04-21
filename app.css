@@ -1163,10 +1163,12 @@ html, body { height: 100%; background: var(--bg-canvas); }
    pure-white surfaces, clear hierarchy, Howden palette on accents
    ============================================================ */
 .ov {
-  padding: 28px 32px 40px;
+  padding: clamp(16px, 2.5vw, 28px) clamp(16px, 2.5vw, 32px) 40px;
   margin: 0 auto; width: 100%;
-  display: flex; flex-direction: column; gap: 24px;
+  max-width: 1600px;
+  display: flex; flex-direction: column; gap: clamp(16px, 2vw, 24px);
   color: var(--fg-1);
+  box-sizing: border-box;
 }
 
 /* ---------- KPI strip ---------- */
@@ -1201,7 +1203,12 @@ html, body { height: 100%; background: var(--bg-canvas); }
 .ov-grid { display: grid; gap: 14px; width: 100%; }
 .ov-grid-top    { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .ov-grid-bottom { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-@media (max-width: 900px) {
+/* Stepped collapse so tiles stay readable on narrower screens.
+   ≥1200px: full row · ≥760px: 2 up for top / 1+1 stacked for bottom · <760px: single column */
+@media (max-width: 1199px) {
+  .ov-grid-top    { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
   .ov-grid-top, .ov-grid-bottom { grid-template-columns: minmax(0, 1fr); }
 }
 .ov-tile {
@@ -1244,10 +1251,26 @@ html, body { height: 100%; background: var(--bg-canvas); }
 .ov-tile-delta.down { color: #C0392B; }
 
 .ov-tile-spark-row {
-  margin: -4px -4px 0;
-  display: flex; align-items: center;
+  margin: -2px -2px 0;
+  position: relative;
+  height: 48px;
 }
-.ov-spark { display: block; width: 100%; height: 32px; }
+.ov-spark-canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+/* Business-lines Chart.js canvas — needs a sized wrapper for Chart.js to
+   size its canvas responsively. */
+.ov-bar-wrap {
+  position: relative;
+  width: 100%;
+}
+.ov-bar-wrap > canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
 
 .ov-tile-count {
   font: 500 10px/12px var(--font-mono);

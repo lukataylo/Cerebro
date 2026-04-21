@@ -54,23 +54,118 @@ function classTint(c) { return CLASS_TINTS[c] || '#888'; }
 // ============================================================
 // Sparkline (thin SVG)
 // ============================================================
-function Sparkline({ values, color = '#0857C3', width = 140, height = 28 }) {
-  if (!values || !values.length) return null;
-  const max = Math.max(...values, 0.01);
-  const min = Math.min(...values, 0);
-  const range = max - min || 1;
-  const pts = values.map((v, i) => {
-    const x = (i / (values.length - 1)) * (width - 4) + 2;
-    const y = height - 2 - ((v - min) / range) * (height - 4);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-  const lastX = width - 2;
-  const lastY = height - 2 - ((values[values.length - 1] - min) / range) * (height - 4);
+// Deterministic hex → rgba helper so Chart.js tints match the palette.
+function hexRgba(hex, alpha) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+  if (!m) return `rgba(0,0,0,${alpha})`;
+  return `rgba(${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)},${alpha})`;
+}
+
+// Sparkline — Chart.js line with a filled gradient area. Uses Chart.js's
+// responsive engine to size to its container, so it never stretches like
+// the old preserveAspectRatio="none" SVG did.
+function Sparkline({ values, color = '#0857C3' }) {
+  const ref = useRefAdmin(null);
+  const chartRef = useRefAdmin(null);
+  useEffectAdmin(() => {
+    if (!ref.current || !window.Chart || !values?.length) return;
+    const ctx = ref.current.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 80);
+    grad.addColorStop(0, hexRgba(color, 0.26));
+    grad.addColorStop(1, hexRgba(color, 0.0));
+    chartRef.current = new window.Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: values.map((_, i) => i),
+        datasets: [{
+          data: values,
+          borderColor: color,
+          borderWidth: 1.6,
+          pointRadius: 0, pointHoverRadius: 0,
+          fill: true, backgroundColor: grad,
+          tension: 0.38, cubicInterpolationMode: 'monotone',
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 500 },
+        interaction: { mode: 'nearest', intersect: false },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: {
+          x: { display: false, grid: { display: false } },
+          y: { display: false, grid: { display: false }, beginAtZero: true },
+        },
+        layout: { padding: 0 },
+      },
+    });
+    return () => { chartRef.current?.destroy(); chartRef.current = null; };
+  }, [values, color]);
+  return <canvas ref={ref} className="ov-spark-canvas" />;
+}
+
+// Horizontal bar chart — business lines. One bar per class, tinted per
+// line of business, currency-formatted x axis, rich tooltip on hover.
+function HorizontalBarChart({ rows, height = 320 }) {
+  const ref = useRefAdmin(null);
+  const chartRef = useRefAdmin(null);
+  useEffectAdmin(() => {
+    if (!ref.current || !window.Chart || !rows?.length) return;
+    const colors = rows.map(r => classTint(r.label));
+    chartRef.current = new window.Chart(ref.current.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: rows.map(r => r.label),
+        datasets: [{
+          data: rows.map(r => r.sum),
+          backgroundColor: colors.map(c => hexRgba(c, 0.85)),
+          borderWidth: 0,
+          borderRadius: 6,
+          maxBarThickness: 22,
+          categoryPercentage: 0.86,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 600 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#fff',
+            titleColor: '#0B1D17',
+            bodyColor: '#4A6C62',
+            borderColor: 'rgba(0,0,0,0.1)',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: false,
+            callbacks: {
+              label: (ctx) => {
+                const r = rows[ctx.dataIndex];
+                return `${fmtMoney(r.sum)} · ${r.count} submission${r.count === 1 ? '' : 's'} · ${r.pct.toFixed(0)}%`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(0,0,0,0.04)', drawTicks: false },
+            ticks: { color: '#6B7A75', font: { size: 10 }, callback: (v) => fmtMoney(v), padding: 6 },
+            border: { display: false },
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: '#0B1D17', font: { size: 12, weight: '500' }, padding: 10 },
+            border: { display: false },
+          },
+        },
+      },
+    });
+    return () => { chartRef.current?.destroy(); chartRef.current = null; };
+  }, [rows]);
   return (
-    <svg className="ov-spark" viewBox={`0 0 ${width} ${height}`} width={width} height={height} preserveAspectRatio="none">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={lastX} cy={lastY} r="2.25" fill={color} />
-    </svg>
+    <div className="ov-bar-wrap" style={{ height }}>
+      <canvas ref={ref} />
+    </div>
   );
 }
 
@@ -119,21 +214,9 @@ function AdminOverview({ quotes }) {
           </div>
         </header>
         <div className="ov-lines">
-          {data.classes.map(c => (
-            <div key={c.label} className="ov-line">
-              <span className="ov-line-dot" style={{ background: classTint(c.label) }} />
-              <div className="ov-line-label">{c.label}</div>
-              <div className="ov-line-bar">
-                <div className="ov-line-fill" style={{ width: `${c.pct}%`, background: classTint(c.label) }} />
-              </div>
-              <div className="ov-line-num">{fmtMoney(c.sum)}</div>
-              <div className="ov-line-pct">{c.pct.toFixed(0)}%</div>
-              <div className="ov-line-count">{c.count} submission{c.count === 1 ? '' : 's'}</div>
-            </div>
-          ))}
-          {data.classes.length === 0 && (
-            <div className="ov-empty">No placements yet.</div>
-          )}
+          {data.classes.length === 0
+            ? <div className="ov-empty">No placements yet.</div>
+            : <HorizontalBarChart rows={data.classes} height={Math.max(200, data.classes.length * 36 + 60)} />}
         </div>
       </section>
 
@@ -187,7 +270,7 @@ function OvTile({ d }) {
         </div>
       </div>
       <div className="ov-tile-spark-row">
-        <Sparkline values={d.spark} color={d.color} width={200} height={30} />
+        <Sparkline values={d.spark} color={d.color} />
       </div>
       <div className="ov-tile-count">
         {d.count} submission{d.count === 1 ? '' : 's'}
