@@ -418,11 +418,16 @@ html, body { height: 100%; background: var(--bg-canvas); }
 .risk-meta .mono { font-family: var(--font-mono); }
 
 .class-pill {
-  display: inline-flex; padding: 2px 8px; border-radius: 6px;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px 2px 6px; border-radius: 6px;
   font: 600 10px/14px var(--font-sans); letter-spacing: 0.04em;
   text-transform: uppercase;
+  /* Default tint — overridden inline by ClassPill per line of business. */
   background: var(--soft-white-secondary); color: var(--gunmetal);
   border: 1px solid var(--cloud-gray);
+}
+.class-pill-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex: none;
 }
 
 /* Confidence meter */

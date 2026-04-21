@@ -1,7 +1,7 @@
 export const DESTINATIONS = {
   // Trade+ (formerly xTrade OM + Smart Follow) — Howden's unified e-trading
   // surface. Handles open market + facility + SME follow on one destination.
-  trade:       { id: 'trade',       label: 'Trade+',        sub: 'Open market & Facility' },
+  trade:       { id: 'trade',       label: 'xTrade',        sub: 'Open market & Facility' },
   whitespace:  { id: 'whitespace',  label: 'Whitespace',    sub: "Lloyd's platform" },
   ppl:         { id: 'ppl',         label: 'PPL',           sub: "Lloyd's platform" },
   gxb:         { id: 'gxb',         label: 'GXB',           sub: "Binder facility" },
@@ -46,7 +46,7 @@ export const RULES = [
   // --- C — compliance / licensing ---
   {
     id: 'C-01', tier: 'compliance', priority: 40, kind: 'predicate',
-    name: 'US surplus lines → Trade+', description: 'US exposure requires surplus-lines carrier',
+    name: 'US surplus lines → xTrade', description: 'US exposure requires surplus-lines carrier',
     dest_id: 'trade',
     predicate: { all: [ { field: 'geography', op: 'contains', value: 'US' } ] },
   },
@@ -79,27 +79,27 @@ export const RULES = [
   // class: specialty vs mainstream picks a different ladder) ---
   {
     id: 'R-03', tier: 'size', priority: 90, kind: 'builtin',
-    name: 'Large → Trade+ Open Market', description: 'Premium ≥ $1.5M, underwriter-led',
+    name: 'Large → xTrade Open Market', description: 'Premium ≥ $1.5M, underwriter-led',
     dest_id: 'trade',
   },
   {
     id: 'R-02', tier: 'size', priority: 100, kind: 'builtin',
-    name: 'Mid → Trade+ Facility', description: 'Premium $250k–1.5M with market leader',
+    name: 'Mid → xTrade Facility', description: 'Premium $250k–1.5M with market leader',
     dest_id: 'trade',
   },
   {
     id: 'R-06', tier: 'size', priority: 110, kind: 'builtin',
-    name: 'Large specialty → Trade+', description: 'Cyber / D&O / PI ≥ $1.5M',
+    name: 'Large specialty → xTrade', description: 'Cyber / D&O / PI ≥ $1.5M',
     dest_id: 'trade',
   },
   {
     id: 'R-05', tier: 'size', priority: 120, kind: 'builtin',
-    name: 'Mid specialty → Trade+', description: 'Cyber / D&O / PI $250k–1.5M',
+    name: 'Mid specialty → xTrade', description: 'Cyber / D&O / PI $250k–1.5M',
     dest_id: 'trade',
   },
   {
     id: 'R-01', tier: 'size', priority: 130, kind: 'builtin',
-    name: 'SME → Trade+ Facility', description: 'Small Property/Casualty/Cyber < $250k',
+    name: 'SME → xTrade Facility', description: 'Small Property/Casualty/Cyber < $250k',
     dest_id: 'trade',
   },
   // --- L — loss overlays (builtin — they apply *after* a base dest has been picked) ---

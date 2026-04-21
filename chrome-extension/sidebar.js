@@ -10,7 +10,7 @@
 const API_BASE = 'http://localhost:3000';
 
 const DESTINATIONS = {
-  trade:       { label: 'Trade+',       sub: 'Open market & Facility', color: '#173F35' },
+  trade:       { label: 'xTrade',       sub: 'Open market & Facility', color: '#173F35' },
   whitespace:  { label: 'Whitespace',   sub: "Lloyd's platform",       color: '#0857C3' },
   ppl:         { label: 'PPL',          sub: "Lloyd's platform",       color: '#1A2F5C' },
   gxb:         { label: 'GXB',          sub: "Lloyd's binder",         color: '#0D6E63' },

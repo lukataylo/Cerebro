@@ -3,7 +3,7 @@
 const DESTINATIONS = {
   // Trade+ (formerly xTrade OM + xTrade Smart Follow) — Howden's unified
   // e-trading surface. Handles open market + facility + SME follow.
-  trade:       { id: 'trade',       label: 'Trade+',        sub: 'Open market & Facility', color: '#173F35', pistachio: true },
+  trade:       { id: 'trade',       label: 'xTrade',        sub: 'Open market & Facility', color: '#173F35', pistachio: true },
   // Lloyd's e-placing platforms
   whitespace:  { id: 'whitespace',  label: 'Whitespace',    sub: "Lloyd's platform",       color: '#0857C3' },
   ppl:         { id: 'ppl',         label: 'PPL',           sub: "Lloyd's platform",       color: '#1A2F5C' },
